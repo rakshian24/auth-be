@@ -1,6 +1,6 @@
-const userResolvers = require("./users");
+import userResolvers from "./users.js";
 
-module.exports = {
+export default {
   Query: {
     ...userResolvers.Query,
   },
