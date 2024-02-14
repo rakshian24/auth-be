@@ -21,7 +21,7 @@ export default {
         ownerId: ctx.request.user._id,
       });
 
-      return newTodo;
+      return { ...newTodo._doc, id: newTodo._id };
     },
   },
   Query: {

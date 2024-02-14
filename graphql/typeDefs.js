@@ -37,7 +37,7 @@ export const typeDefs = `
     allUsers: [User]
     
     todos: [Todo]
-    todo: Todo
+    todo(id: ID!): Todo
   }
   
   type Mutation {

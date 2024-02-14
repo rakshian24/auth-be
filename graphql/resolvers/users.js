@@ -70,6 +70,7 @@ export default {
 
       const result = {
         ...user._doc,
+        id: user._id,
         todos: [...todosOfAUser],
       };
 
