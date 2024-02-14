@@ -19,20 +19,22 @@ export const generateToken = async (ctx, userId) => {
 };
 
 export const protectApi = async (ctx) => {
-  const cookieObj = await ctx?.request?.cookieStore?.get(AUTH_COOKIE_NAME);
-  const token = cookieObj?.value;
+  return new Promise(async (resolve, reject) => {
+    const cookieObj = await ctx?.request?.cookieStore?.get(AUTH_COOKIE_NAME);
+    const token = cookieObj?.value;
 
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      ctx.request.user = await User.findById(decoded.userId);
-      return;
-    } catch (error) {
-      console.error(error);
-      throw new ApolloError(`Not authorized, no token`, "NOT_AUTHORISED");
+        ctx.request.user = await User.findById(decoded.userId);
+        resolve();
+      } catch (error) {
+        console.error(error);
+        reject(`Not authorized, no token`, "NOT_AUTHORISED");
+      }
+    } else {
+      reject(`Not authorized, no token`, "NOT_AUTHORISED");
     }
-  } else {
-    throw new ApolloError(`Not authorized, no token`, "NOT_AUTHORISED");
-  }
+  });
 };

@@ -1,8 +1,17 @@
 export const typeDefs = `
   type User {
+    id: ID
     username: String
     email: String
-    id: String
+    todos: [Todo]
+  }
+
+  type Todo {
+    id: ID
+    title: String
+    description: String
+    isCompleted: Boolean
+    ownerId: ID
   }
   
   input RegisterInput {
@@ -16,15 +25,26 @@ export const typeDefs = `
     email: String!
     password: String!
   }
+
+  input TodoInput {
+    title: String!
+    description: String!
+    isCompleted: Boolean!
+  }
   
   type Query {
     user(id: ID!): User
-    allUsers: [User]!
+    allUsers: [User]
+    
+    todos: [Todo]
+    todo: Todo
   }
   
   type Mutation {
-    registerUser(registerInput: RegisterInput): User!
-    loginUser(loginInput: LoginInput): User!
-    logOut: String!
+    registerUser(registerInput: RegisterInput): User
+    loginUser(loginInput: LoginInput): User
+    logOut: String
+
+    createTodo(todoInput: TodoInput): Todo
   }
 `;
