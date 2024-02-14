@@ -1,6 +1,7 @@
 import { ApolloError } from "apollo-server-errors";
-import { generateToken } from "../../utils/index.js";
+import { generateToken, protectApi } from "../../utils/index.js";
 import User from "../../models/User.js";
+import { AUTH_COOKIE_NAME } from "../../constants/index.js";
 
 export default {
   Mutation: {
@@ -47,14 +48,25 @@ export default {
         );
       }
     },
+
+    async logOut(_, args, ctx) {
+      await ctx.request.cookieStore?.delete({
+        name: AUTH_COOKIE_NAME,
+      });
+      return "Logged out successfully!";
+    },
   },
   Query: {
-    async user(_, { id }) {
+    async user(_, { id }, ctx) {
+      protectApi(ctx);
+
       const user = await User.findById(id);
       return user;
     },
 
-    async allUsers() {
+    async allUsers(_, args, ctx) {
+      protectApi(ctx);
+
       const users = await User.find();
       return users;
     },
