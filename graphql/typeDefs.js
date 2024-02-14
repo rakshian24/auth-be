@@ -25,5 +25,6 @@ export const typeDefs = `
   type Mutation {
     registerUser(registerInput: RegisterInput): User!
     loginUser(loginInput: LoginInput): User!
+    logOut: String!
   }
 `;

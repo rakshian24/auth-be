@@ -1,4 +1,7 @@
 import jwt from "jsonwebtoken";
+import { AUTH_COOKIE_NAME } from "../constants/index.js";
+import { ApolloError } from "apollo-server-errors";
+import User from "../models/User.js";
 
 export const generateToken = async (ctx, userId) => {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
@@ -6,11 +9,30 @@ export const generateToken = async (ctx, userId) => {
   });
 
   await ctx.request.cookieStore?.set({
-    name: "rakshAppToken",
+    name: AUTH_COOKIE_NAME,
     value: token,
     httpOnly: true,
     secure: process.env.NODE_ENV !== "development", // Use secure cookies in production
     sameSite: "strict",
     maxAge: 20 * 24 * 60 * 60 * 1000, // 20 days
   });
+};
+
+export const protectApi = async (ctx) => {
+  const cookieObj = await ctx?.request?.cookieStore?.get(AUTH_COOKIE_NAME);
+  const token = cookieObj?.value;
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      ctx.request.user = await User.findById(decoded.userId);
+      return;
+    } catch (error) {
+      console.error(error);
+      throw new ApolloError(`Not authorized, no token`, "NOT_AUTHORISED");
+    }
+  } else {
+    throw new ApolloError(`Not authorized, no token`, "NOT_AUTHORISED");
+  }
 };
