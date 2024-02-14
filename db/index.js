@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const connectDB = async () => {
+export const connectDB = async () => {
   try {
     const { NODE_ENV, MONGO_URI_PROD, MONGO_URI_DEV } = process.env;
     const isProduction = NODE_ENV === "production";
@@ -11,8 +11,4 @@ const connectDB = async () => {
     console.error(`Error: ${error.message}`);
     process.exit(1);
   }
-};
-
-module.exports = {
-  connectDB,
 };

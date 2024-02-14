@@ -1,18 +1,25 @@
-const dotenv = require("dotenv");
+import { createServer } from "node:http";
+import { createSchema, createYoga } from "graphql-yoga";
+import { useCookies } from "@whatwg-node/server-plugin-cookies";
+import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
-const { ApolloServer } = require("apollo-server");
-const { connectDB } = require("./db");
-const typeDefs = require("./graphql/typeDefs");
-const resolvers = require("./graphql/resolvers");
+import { typeDefs } from "./graphql/typeDefs.js";
+import resolvers from "./graphql/resolvers/index.js";
+import { connectDB } from "./db/index.js";
 
 connectDB();
 const { SERVER_PORT } = process.env;
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
+const yoga = createYoga({
+  schema: createSchema({
+    typeDefs,
+    resolvers,
+  }),
+  plugins: [useCookies()],
 });
 
-server.listen({ port: SERVER_PORT }).then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
+const server = createServer(yoga);
+
+server.listen(SERVER_PORT, () => {
+  console.log(`Server is running on http://localhost:${SERVER_PORT}`);
 });
