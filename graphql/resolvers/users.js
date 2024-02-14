@@ -2,6 +2,7 @@ import { ApolloError } from "apollo-server-errors";
 import { generateToken, protectApi } from "../../utils/index.js";
 import User from "../../models/User.js";
 import { AUTH_COOKIE_NAME } from "../../constants/index.js";
+import Todo from "../../models/Todo.js";
 
 export default {
   Mutation: {
@@ -58,14 +59,29 @@ export default {
   },
   Query: {
     async user(_, { id }, ctx) {
-      protectApi(ctx);
+      try {
+        await protectApi(ctx);
+      } catch (error) {
+        throw new ApolloError(`Not Authorised`, `NOT_AUTHORISED`);
+      }
 
       const user = await User.findById(id);
-      return user;
+      const todosOfAUser = await Todo.find({ ownerId: user._id });
+
+      const result = {
+        ...user._doc,
+        todos: [...todosOfAUser],
+      };
+
+      return result;
     },
 
     async allUsers(_, args, ctx) {
-      protectApi(ctx);
+      try {
+        await protectApi(ctx);
+      } catch (error) {
+        throw new ApolloError(`Not Authorised`, `NOT_AUTHORISED`);
+      }
 
       const users = await User.find();
       return users;
