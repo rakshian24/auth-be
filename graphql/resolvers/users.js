@@ -1,8 +1,9 @@
 import { ApolloError } from "apollo-server-errors";
-import { generateToken, protectApi } from "../../utils/index.js";
+import jwt from "jsonwebtoken";
 import User from "../../models/User.js";
 import { AUTH_COOKIE_NAME } from "../../constants/index.js";
 import Todo from "../../models/Todo.js";
+import getLoggedInUserId from "../../middleware/getLoggedInUserId.js";
 
 export default {
   Mutation: {
@@ -20,28 +21,30 @@ export default {
         );
       }
 
-      const user = await User.create({
-        username,
-        email,
-        password,
-        confirmPassword,
+      const newUser = new User({ username, email, password, confirmPassword });
+
+      const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
       });
 
-      if (user) {
-        generateToken(ctx, user._id);
-        return user;
-      } else {
-        throw new ApolloError(`Invalid user`, "INVALID_USER");
-      }
+      const res = await newUser.save();
+
+      const response = { user: { id: res.id, ...res._doc }, token };
+
+      return response;
     },
 
     async loginUser(_, { loginInput: { email, password } }, ctx) {
       const user = await User.findOne({ email });
 
       if (user && (await user.matchPassword(password))) {
-        generateToken(ctx, user._id);
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+          expiresIn: "1d",
+        });
 
-        return user;
+        const response = { user: { id: user.id, ...user._doc }, token };
+
+        return response;
       } else {
         throw new ApolloError(
           `Invalid email or password`,
@@ -58,15 +61,12 @@ export default {
     },
   },
   Query: {
-    async user(_, { id }, ctx) {
-      try {
-        await protectApi(ctx);
-      } catch (error) {
-        throw new ApolloError(`Not Authorised`, `NOT_AUTHORISED`);
-      }
+    async me(_, args, ctx) {
+      const loggedInUserId = getLoggedInUserId(ctx);
+      const userId = loggedInUserId?.userId;
 
-      const user = await User.findById(id);
-      const todosOfAUser = await Todo.find({ ownerId: user._id });
+      const user = await User.findById(userId);
+      const todosOfAUser = await Todo.find({ ownerId: userId });
 
       const result = {
         ...user._doc,
@@ -75,17 +75,6 @@ export default {
       };
 
       return result;
-    },
-
-    async allUsers(_, args, ctx) {
-      try {
-        await protectApi(ctx);
-      } catch (error) {
-        throw new ApolloError(`Not Authorised`, `NOT_AUTHORISED`);
-      }
-
-      const users = await User.find();
-      return users;
     },
   },
 };

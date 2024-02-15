@@ -6,6 +6,11 @@ export const typeDefs = `
     todos: [Todo]
   }
 
+  type AuthResponse {
+    user: User
+    token: String
+  }
+
   type Todo {
     id: ID
     title: String
@@ -33,16 +38,15 @@ export const typeDefs = `
   }
   
   type Query {
-    user(id: ID!): User
-    allUsers: [User]
+    me: User
     
     todos: [Todo]
     todo(id: ID!): Todo
   }
   
   type Mutation {
-    registerUser(registerInput: RegisterInput): User
-    loginUser(loginInput: LoginInput): User
+    registerUser(registerInput: RegisterInput): AuthResponse
+    loginUser(loginInput: LoginInput): AuthResponse
     logOut: String
 
     createTodo(todoInput: TodoInput): Todo
