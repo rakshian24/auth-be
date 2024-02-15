@@ -7,7 +7,7 @@ import resolvers from "./graphql/resolvers/index.js";
 import { connectDB } from "./db/index.js";
 
 connectDB();
-const { SERVER_PORT } = process.env;
+const { SERVER_PORT, FRONTEND_URL } = process.env;
 
 const yoga = createYoga({
   schema: createSchema({
@@ -15,10 +15,8 @@ const yoga = createYoga({
     resolvers,
   }),
   cors: {
-    origin: "https://raksh-auth-fe.vercel.app",
     credentials: true,
-    methods: ["POST"],
-    allowedHeaders: ["X-Custom-Header"],
+    origin: FRONTEND_URL,
   },
 });
 
