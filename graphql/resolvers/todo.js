@@ -1,6 +1,5 @@
-import { ApolloError } from "apollo-server-errors";
-import { protectApi } from "../../utils/index.js";
 import Todo from "../../models/Todo.js";
+import getLoggedInUserId from "../../middleware/getLoggedInUserId.js";
 
 export default {
   Mutation: {
@@ -9,16 +8,14 @@ export default {
       { todoInput: { title, description, isCompleted } },
       ctx
     ) {
-      try {
-        await protectApi(ctx);
-      } catch (error) {
-        throw new ApolloError(`Not Authorised`, `NOT_AUTHORISED`);
-      }
+      const loggedInUserId = getLoggedInUserId(ctx);
+      const userId = loggedInUserId?.userId;
+
       const newTodo = await Todo.create({
         title,
         description,
         isCompleted,
-        ownerId: ctx.request.user._id,
+        ownerId: userId,
       });
 
       return { ...newTodo._doc, id: newTodo._id };
@@ -26,28 +23,22 @@ export default {
   },
   Query: {
     async todo(_, { id }, ctx) {
-      try {
-        await protectApi(ctx);
-      } catch (error) {
-        throw new ApolloError(`Not Authorised`, `NOT_AUTHORISED`);
-      }
+      const loggedInUserId = getLoggedInUserId(ctx);
+      const userId = loggedInUserId?.userId;
 
       const todo = await Todo.findOne({
         _id: id,
-        ownerId: ctx.request.user._id,
+        ownerId: userId,
       });
 
       return todo;
     },
 
     async todos(_, args, ctx) {
-      try {
-        await protectApi(ctx);
-      } catch (error) {
-        throw new ApolloError(`Not Authorised`, `NOT_AUTHORISED`);
-      }
+      const loggedInUserId = getLoggedInUserId(ctx);
+      const userId = loggedInUserId?.userId;
 
-      const todos = await Todo.find({ ownerId: ctx.request.user._id });
+      const todos = await Todo.find({ ownerId: userId });
 
       return todos;
     },

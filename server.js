@@ -1,6 +1,5 @@
 import { createServer } from "node:http";
 import { createSchema, createYoga } from "graphql-yoga";
-import { useCookies } from "@whatwg-node/server-plugin-cookies";
 import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 import { typeDefs } from "./graphql/typeDefs.js";
@@ -15,7 +14,6 @@ const yoga = createYoga({
     typeDefs,
     resolvers,
   }),
-  plugins: [useCookies()],
 });
 
 const server = createServer(yoga);
