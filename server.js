@@ -15,9 +15,10 @@ const yoga = createYoga({
     resolvers,
   }),
   cors: {
-    origin: ["http://localhost:3000", "https://raksh-auth-fe.vercel.app/"],
+    origin: "https://raksh-auth-fe.vercel.app",
     credentials: true,
     methods: ["POST"],
+    allowedHeaders: ["X-Custom-Header"],
   },
 });
 
