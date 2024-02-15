@@ -14,6 +14,11 @@ const yoga = createYoga({
     typeDefs,
     resolvers,
   }),
+  cors: {
+    origin: ["http://localhost:3000", "https://raksh-auth-fe.vercel.app/"],
+    credentials: true,
+    methods: ["POST"],
+  },
 });
 
 const server = createServer(yoga);
